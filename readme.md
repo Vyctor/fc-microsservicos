@@ -98,3 +98,106 @@ Cada microsserviço deve ter seu banco de dados com as informações persistente
 ## Design evolutivo
 
 O Design dos serviços são feitos para tenha a possibilidade de evoluir, substituir e desabilitar os serviços sem maiores complicações.
+
+# Resiliência
+
+## O que é resiliência?
+
+É um conjunto de estratégias adotadas **intencionalmente** para a adaptação de uma sistema quando uma falha ocorre.
+
+Ter estratégias de resiliência nos possibilita minimizar os riscos de perda de dados e transações importantes para o negócio.
+
+## Proteger e ser protegido
+
+Um sistema em uma arquitetura distribuída precisa adotar mecanismos de autopreservação para garantir ao máximo sua operação com **qualidade**
+
+Um sistema precisa sempre se comportar da mesma forma, independente do cenário enfrentado.
+
+Um sistema não pode ser egoísta ao ponto de realizar mais requisições em um sistema que está falhando.
+
+Um sistema lento no ar muitas vezes é pior que um sistema fora do ar.
+
+## Health Check
+
+- Sem sinais vitais não é possível saber a saúde de um sistema
+- Deve bater em todas as dependências do sistema
+- Um sistema que não está saudável possui uma chance de se recuperar caso o tráfego para de ser direcionado a ele temporariamente
+
+## Rate Limiting
+
+- Protege o sistema baseado no que ele foi projetado para suportar
+- Limita a quantidade de requisições que o sistema pode lidar
+- Pode ser programada por tipo de client
+
+## Circuit Breaker
+
+- Protege o sistema fazendo com que as requisições feitas para ele sejam negadas
+- Circuito fechado = Requisições chegam normalmente
+- Circuito aberto = Requisições não chegam ao sistema. Erro instantâneo ao client
+- Meio aberto = Permite uma quantidade limitada de requisições para verificação se o sistema tem condições de voltar ao ar integralmente
+
+## API Gateway
+
+- Garante que as requisições inapropriadas não cheguem ao sistema.
+- Implementa políticas de Rate Limiting, Health Check
+- Ajuda a organizar microsserviços em contexto - Estrela da morte
+
+## Service Mesh
+
+- Controla o tráfego de rede através de proxies
+- Evita implementações de proteção pelo próprio sistema
+- mTLS
+- Implementa Circuit Breaker, retry, timeout, fault injection
+
+## Trabalhar de forma assíncrona
+
+- Evita perda de dados
+- Não há perda de dados no envio de uma transação se o servidor estiver fora do ar
+- Servidor pode processar a transação em seu tempo, quando estiver online
+- Entender com profundidade o message broker/sistema de stream
+
+## Retry
+
+- Exponential backoff (o tempo de re-tentativa é aumentado exponencialmente)
+- Exponential backoff com Jitter (o tento de re-tentativa é aumentado exponencialmente, porém com o Jitter eu tenho os tempos de chamada embaralhados, pois é mandado o tempo da chamada mais um valor aleatório para se somar ao tempo total de espera)
+
+## Garantias de entrega
+
+- **Ack 0**. Fire and Forget -> Não importa se a mensagem foi recebida. Não precisa de ack, não garante a entrega.
+- **Ack 1**. O líder recebe e confirma a mensagem. Garante mais ou menos a entrega.
+- **Ack -1**. O líder recebe a mensagem e encaminha para todos os followers. Garante totalmente a entrega.
+
+## Situações complexas
+
+- O que acontece se o message broker cair?
+- Haverá perda de mensagens?
+- Seu sistema ficará fora do ar?
+- Como garantir resiliência
+
+## Transaction outbox
+
+Criar uma tabela com registros temporários para armazenas as mensagens, e após mandá-las para o broker.
+Quando o broker receber a mensagem eu posso deletar esse item da tabela
+
+## Garantia de recebimento
+
+- Auto Ack = false e commit manual (preciso processar e fazer o commit do recebimento)
+- Prefetch alinhado a volumetria (receber um batch de mensagens que será processado pelo consumer)
+- Saber quantas mensagens consigo consumir
+
+## Idempotência e políticas de fallback
+
+- O ato de conseguir lidar com duplicidade de informação
+- Ter a condição de identificar a duplicidade de mensagens e descartar-las
+- Políticas claras de fallback
+
+## Observabilidade
+
+- APM
+  - Consegue monitor a aplicação
+- Tracing Distribuído
+  - Monitora o caminho que uma requisição percorreu e onde eventualmente ocorreram erros
+- Métricas personalizadas
+  - Métricas que garantem informações de negócio e de aplicação
+- Spans personalizados
+  - Mostrar tudo que acontece dentro do software, de forma clara
