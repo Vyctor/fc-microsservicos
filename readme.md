@@ -201,3 +201,9 @@ Quando o broker receber a mensagem eu posso deletar esse item da tabela
   - Métricas que garantem informações de negócio e de aplicação
 - Spans personalizados
   - Mostrar tudo que acontece dentro do software, de forma clara
+
+# Referências
+
+- Exponential backoff and Jitter: https://aws.amazon.com/pt/blogs/architecture/exponential-backoff-and-jitter/
+- Remédio ou Veneno - https://www.youtube.com/watch?v=1MkPpKPyBps
+- OTEL - https://opentelemetry.io/
