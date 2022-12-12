@@ -202,6 +202,29 @@ Quando o broker receber a mensagem eu posso deletar esse item da tabela
 - Spans personalizados
   - Mostrar tudo que acontece dentro do software, de forma clara
 
+# Coreografia vs Orquestração
+
+## Coreografia
+
+São decisões distribuídas, cada transação local publica eventos de domínio que acionam transações locais em outros serviços.
+
+## Dinâmica de orquestração
+
+Decisões centralizadas, um orquestrador (objeto) informa aos participantes quais transações locais executar.
+
+- SERVICES
+  - (A) MS Checkout Service ->
+  - (B) Payment Service ->
+  - (C) Stock Service ->
+  - (D) Invoice Service ->
+  - (E) Warehouse Management Service
+
+Orquestrador - Define os passos que uma transação vai percorrer
+
+## Estratégias de APIs
+
+Quando tenho diversos contextos posso colocar cada um em um Micro API Gateway separado e realizar a comunicação entre eles através dos API Gateways
+
 # Referências
 
 - Exponential backoff and Jitter: https://aws.amazon.com/pt/blogs/architecture/exponential-backoff-and-jitter/
