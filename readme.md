@@ -225,6 +225,131 @@ Orquestrador - Define os passos que uma transação vai percorrer
 
 Quando tenho diversos contextos posso colocar cada um em um Micro API Gateway separado e realizar a comunicação entre eles através dos API Gateways
 
+# Patterns
+
+## API Composition - Dados
+
+- Quando tenho um relatório que necessita de informações de dois serviços diferentes, eu posso criar um **Service Composer** que chama os dois serviços necessários e retorna a informação com apenas uma chamada.
+
+### Problemas ao compor serviços
+
+- Disponibilidade
+- Consistência nos dados
+- Aumento da complexidade
+- Necessidade de criar um serviço para ler outros serviços
+- Alta latência
+
+## API Composition - Regras de negócio
+
+A API Composition irá requisitar os dados de determinados serviços e através deles aplicar regras de negócio para retornar as informações requisitadas.
+
+### Ponto de Alerta
+
+**Você sempre deve pensar em resiliência.**
+
+## Decompose by business capability
+
+Decompor os microsserviços pelos bounded contexts da aplicação
+
+## Strangler Application
+
+Ao migrar um monolito para microsserviços, decompondo aos poucos suas partes e escrevendo novas features já em formato de microsserviço, aos poucos o monolito se tornará um microsserviço.
+
+### Problemas ao utilizar essa abordagem
+
+- Comunicação com monolito
+- Maturidade da equipe (Plataforma/Cultura Devops)
+- Bancos de dados (Transição -> Compartilhado -> Avaliar dados utilizados -> Migrar dados para um banco próprio)
+- Utilizar um APM em cada microsserviço
+- Mapear métricas e configurar alarmes
+
+## ACL - Anti Corruption Layer
+
+Crio um microsserviço que servirá como uma interface para a operação que deverá ser realizada por outro microsserviço.
+Exemplo: Tenho três adquirentes que realizam cobrança, ao invés de programar tudo em um único microsserviço eu implemento cada um dos três em um microsserviço separado e implemento mais um microsserviço que servirá como um tipo de proxy para decidir qual serviço de adquirente será chamado, se acordo com regra de negócio estabelecida.
+
+## API Gateway
+
+É o ponto único de entrada para sua malha de microsserviços.
+
+- Disponibiliza
+  - Rate Limit
+  - Pode realizar modificações na mensagem.
+  - Autenticação (podendo chamar até serviços externos como Keycloak)
+
+## Back End For Frontend
+
+Backend que retorna informações diferentes, adequadas a performance, dependendo do tipo do client que requisitou (Mobile, Desktop, Embarcados, etc...)
+Pode criar cada serviço de acordo com o retorno esperado, ou criar um microsserviço BFF para bater no serviço desejado e tratar os dados para retornar somente o necessário.
+
+## Banco de dados
+
+- Um banco de dados por microsserviço (GUIDELINE)
+- Ao transicionar de monolito para microsserviço podemos, por um momento, manter os bancos compartilhados e de acordo com o tempo ir separando os bancos.
+
+## Relatórios de consolidação de informações
+
+- Opções
+  1. Gerar o relatório em background, fazendo o microsserviço consolidar a informação
+  2. Criar um microsserviço de relatórios específicos
+  3. Trabalhar com tabelas de projeção
+     1. Buscar os dados necessários de todos os microsserviços
+     2. Criar uma tabela projetada com os dados do relatório
+
+## Transactional Outbox
+
+Crio uma tabela para armazenar as requisições da fila, e após a requisição ser realizada corretamente eu deleto essa informação do banco.
+
+Opções de banco de dados
+
+- RDBMS/Schema separado
+- KV -> DynamoDB
+- Cache -> Redis -> Persistir os dados em disco, caso ocorra um crash
+
+Criar um SDK Interno na empresa
+
+- Toda requisição -> Retry -> grava no buffer
+- DoRequest -> Com paz de espírito
+
+## Secret Manager
+
+Armazena suas credenciais de forma segura, criptografado, e disponibiliza para os serviços que a utilizarão.
+Consigo rotacionar senhas de acordo com tempo predeterminado.
+
+## Padronização de logs
+
+- Observabilidade
+  - Logs
+  - Métricas
+  - Tracing
+
+Logs são resultados de um evento. Preciso centralizar os logs em um elastic search.
+
+Os logs precisam estar padronizados. Para facilitar e possibilitar buscas.
+
+Criar um SDK de logs, para forçar a padronização.
+
+Unificação de linhas para um log -> Elastic Stack -> Logstash || Filebeat
+
+## Open Telemetry
+
+É um SDK de telemetria de aplicações.
+
+## Service Template
+
+É um serviço que padroniza a criação de novos microsserviços
+
+- Padrões de implementação
+- Logs
+- Outbox
+- Gerenciamento de password
+- Comunicação com sistemas de mensageria
+- Observabilidade
+- CQRS
+- Múltiplos bancos de dados
+- Auditoria
+- Jobs
+
 # Referências
 
 - Exponential backoff and Jitter: https://aws.amazon.com/pt/blogs/architecture/exponential-backoff-and-jitter/
