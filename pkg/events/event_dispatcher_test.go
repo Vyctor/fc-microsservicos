@@ -125,7 +125,7 @@ type MockHandler struct {
 func (m *MockHandler) Handle(event EventInterface) {
 	m.Called(event)
 }
-
+~
 func (suite *EventDispatcherTestSuite) TestEventDispatcher_Dispatch() {
 	eh := &MockHandler{}
 	eh.On("Handle", &suite.event)
