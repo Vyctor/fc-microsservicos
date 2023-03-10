@@ -38,13 +38,13 @@ func NewCreateTransactionUsecase(
 }
 
 func (usecase *CreateTransactionUsecase) Execute(input CreateTransactionInputDto) (*CreateTransactionOutputDto, error) {
-	accountFrom, err := usecase.AccountGateway.FindById(input.AccountIDFrom)
+	accountFrom, err := usecase.AccountGateway.FindByID(input.AccountIDFrom)
 
 	if err != nil {
 		return nil, err
 	}
 
-	accountTo, err := usecase.AccountGateway.FindById(input.AccountIDTo)
+	accountTo, err := usecase.AccountGateway.FindByID(input.AccountIDTo)
 
 	if err != nil {
 		return nil, err
