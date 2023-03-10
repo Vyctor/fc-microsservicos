@@ -4,6 +4,8 @@ import (
 	"testing"
 
 	"github.com.br/vyctor/fc-microsservicos/internal/entity"
+	"github.com.br/vyctor/fc-microsservicos/internal/event"
+	"github.com.br/vyctor/fc-microsservicos/pkg/events"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -46,7 +48,6 @@ func TestCreateTransactionUsecase_Execute(t *testing.T) {
 	mockAccount.On("FindById", account2.ID).Return(account2, nil)
 
 	mockTransaction := &TransactionGatewayMock{}
-
 	mockTransaction.On("Create", mock.Anything).Return(nil)
 
 	inputDto := CreateTransactionInputDto{
@@ -55,10 +56,11 @@ func TestCreateTransactionUsecase_Execute(t *testing.T) {
 		Amount:        100.0,
 	}
 
-	usecase := NewCreateTransactionUsecase(mockTransaction, mockAccount)
+	dispatcher := events.NewEventDispatcher()
+	event := event.NewTransactionCreated()
 
+	usecase := NewCreateTransactionUsecase(mockTransaction, mockAccount, dispatcher, event)
 	output, err := usecase.Execute(inputDto)
-
 	assert.Nil(t, err)
 	assert.NotNil(t, output)
 	mockAccount.AssertExpectations(t)
