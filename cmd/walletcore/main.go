@@ -9,6 +9,8 @@ import (
 	CreateAccount "github.com.br/vyctor/fc-microsservicos/internal/usecase/create_account"
 	CreateClient "github.com.br/vyctor/fc-microsservicos/internal/usecase/create_client"
 	CreateTransaction "github.com.br/vyctor/fc-microsservicos/internal/usecase/create_transaction"
+	"github.com.br/vyctor/fc-microsservicos/internal/web"
+	"github.com.br/vyctor/fc-microsservicos/internal/web/webserver"
 	"github.com.br/vyctor/fc-microsservicos/pkg/events"
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -35,4 +37,15 @@ func main() {
 	createAccountUsecase := CreateAccount.NewCreateAccountUsecase(accountDb, clientDb)
 	createTransactionUsecase := CreateTransaction.NewCreateTransactionUsecase(transactionDb, accountDb, eventDispatcher, transactionCreatedEvent)
 
+	webserver := webserver.NewWebServer(":3000")
+
+	clientHandler := web.NewWebClientHandler(*createClientUsecase)
+	accountHandler := web.NewWebAccountHandler(*createAccountUsecase)
+	transactionHandler := web.NewWebTransactionHandler(*createTransactionUsecase)
+
+	webserver.AddHandler("/clients", clientHandler.CreateClient)
+	webserver.AddHandler("/accounts", accountHandler.CreateAccount)
+	webserver.AddHandler("/transactions", transactionHandler.CreateTransaction)
+
+	webserver.Start()
 }
