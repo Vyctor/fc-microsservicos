@@ -2,7 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
 
 	"github.com.br/vyctor/fc-microsservicos/internal/database"
 	"github.com.br/vyctor/fc-microsservicos/internal/event"
@@ -16,7 +15,7 @@ import (
 )
 
 func main() {
-	db, err := sql.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local", "root,", "root", "localhost", "3306", "wallet"))
+	db, err := sql.Open("mysql", "root:root@tcp(localhost:3306)/wallet?parseTime=true")
 
 	if err != nil {
 		panic(err)
