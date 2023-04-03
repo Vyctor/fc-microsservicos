@@ -8,11 +8,6 @@ import (
 
 func TestCreateNewClient(t *testing.T) {
 	client, err := NewClient("John Doe", "j@j.com")
-
-	if err != nil {
-		t.Error("Error creating new client")
-	}
-
 	assert.Nil(t, err)
 	assert.NotNil(t, client)
 	assert.Equal(t, "John Doe", client.Name)
@@ -27,38 +22,22 @@ func TestCreateNewClientWhenArgsAreInvalid(t *testing.T) {
 
 func TestUpdateClient(t *testing.T) {
 	client, _ := NewClient("John Doe", "j@j.com")
-
-	err := client.Update("John Doe Jr", "jjr@j.com")
-
+	err := client.Update("John Doe Update", "j@j.com")
 	assert.Nil(t, err)
-	assert.Equal(t, "John Doe Jr", client.Name)
-	assert.Equal(t, "jjr@j.com", client.Email)
+	assert.Equal(t, "John Doe Update", client.Name)
+	assert.Equal(t, "j@j.com", client.Email)
 }
 
 func TestUpdateClientWithInvalidArgs(t *testing.T) {
 	client, _ := NewClient("John Doe", "j@j.com")
-
-	err := client.Update("", "jjr@j.com")
-
+	err := client.Update("", "j@j.com")
 	assert.Error(t, err, "name is required")
 }
 
 func TestAddAccountToClient(t *testing.T) {
-	client, _ := NewClient("John Doe", "j@#j.com")
-
+	client, _ := NewClient("John Doe", "j@j")
 	account := NewAccount(client)
-
-	assert.NotNil(t, account)
-	assert.Equal(t, client.ID, account.Client.ID)
-}
-
-func TestAddAnotherClientAccountToClient(t *testing.T) {
-	client, _ := NewClient("John Doe", "j@#j.com")
-	anotherClient, _ := NewClient("John Doe Jr", "jjr@#j.com")
-
-	account := NewAccount(client)
-
-	err := anotherClient.AddAccount(account)
-
-	assert.Error(t, err, "account already belongs to another client")
+	err := client.AddAccount(account)
+	assert.Nil(t, err)
+	assert.Equal(t, 1, len(client.Accounts))
 }

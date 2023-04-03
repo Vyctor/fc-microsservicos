@@ -4,40 +4,38 @@ import (
 	"encoding/json"
 	"net/http"
 
-	CreateClient "github.com.br/vyctor/fc-microsservicos/internal/usecase/create_client"
+	"github.com.br/devfullcycle/fc-ms-wallet/internal/usecase/create_client"
 )
 
 type WebClientHandler struct {
-	CreateClientUsecase CreateClient.CreateClientUseCase
+    CreateClientUseCase create_client.CreateClientUseCase
 }
 
-func NewWebClientHandler(createClientUsecase CreateClient.CreateClientUseCase) WebClientHandler {
-	return WebClientHandler{
-		CreateClientUsecase: createClientUsecase,
-	}
+func NewWebClientHandler(createClientUseCase create_client.CreateClientUseCase) *WebClientHandler {
+    return &WebClientHandler{
+        CreateClientUseCase: createClientUseCase,
+    }
 }
 
 func (h *WebClientHandler) CreateClient(w http.ResponseWriter, r *http.Request) {
-	var dto CreateClient.CreateClientInputDTO
+    var dto create_client.CreateClientInputDTO
+    err := json.NewDecoder(r.Body).Decode(&dto)
+    if err != nil {
+        w.WriteHeader(http.StatusBadRequest)
+        return
+    }
 
-	err := json.NewDecoder(r.Body).Decode(&dto)
+    output, err := h.CreateClientUseCase.Execute(dto)
+    if err != nil {
+        w.WriteHeader(http.StatusInternalServerError)
+        return
+    }
 
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
-	output, err := h.CreateClientUsecase.Execute(dto)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	err = json.NewEncoder(w).Encode(output)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	w.WriteHeader(http.StatusCreated)
+    w.Header().Set("Content-Type", "application/json")
+    err = json.NewEncoder(w).Encode(output)
+    if err != nil {
+        w.WriteHeader(http.StatusInternalServerError)
+        return
+    }
+    w.WriteHeader(http.StatusCreated)
 }

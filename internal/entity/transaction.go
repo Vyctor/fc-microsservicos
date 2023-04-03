@@ -8,15 +8,16 @@ import (
 )
 
 type Transaction struct {
-	ID          string
-	AccountFrom *Account
-	AccountTo   *Account
-	Amount      float64
-	CreatedAt   time.Time
+	ID            string
+	AccountFrom   *Account `gorm:"foreignKey:AccountFromID"`
+	AccountFromID string
+	AccountTo     *Account `gorm:"foreignKey:AccountToID"`
+	AccountToID   string
+	Amount        float64
+	CreatedAt     time.Time
 }
 
 func NewTransaction(accountFrom *Account, accountTo *Account, amount float64) (*Transaction, error) {
-
 	transaction := &Transaction{
 		ID:          uuid.New().String(),
 		AccountFrom: accountFrom,
@@ -24,16 +25,12 @@ func NewTransaction(accountFrom *Account, accountTo *Account, amount float64) (*
 		Amount:      amount,
 		CreatedAt:   time.Now(),
 	}
-
 	err := transaction.Validate()
-
 	if err != nil {
 		return nil, err
 	}
-
 	transaction.Commit()
-
-	return transaction, err
+	return transaction, nil
 }
 
 func (t *Transaction) Commit() {
@@ -42,17 +39,11 @@ func (t *Transaction) Commit() {
 }
 
 func (t *Transaction) Validate() error {
-	if t.AccountFrom == nil || t.AccountTo == nil {
-		return errors.New("accounts are required")
-	}
-
 	if t.Amount <= 0 {
 		return errors.New("amount must be greater than zero")
 	}
-
 	if t.AccountFrom.Balance < t.Amount {
 		return errors.New("insufficient funds")
 	}
-
 	return nil
 }

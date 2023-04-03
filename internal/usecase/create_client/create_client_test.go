@@ -1,9 +1,9 @@
-package CreateClient
+package create_client
 
 import (
 	"testing"
 
-	"github.com.br/vyctor/fc-microsservicos/internal/entity"
+	"github.com.br/devfullcycle/fc-ms-wallet/internal/entity"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -22,21 +22,20 @@ func (m *ClientGatewayMock) Get(id string) (*entity.Client, error) {
 	return args.Get(0).(*entity.Client), args.Error(1)
 }
 
-func TestCreateClientUsecase_Execute(t *testing.T) {
-	mockClientGateway := &ClientGatewayMock{}
+func TestCreateClientUseCase_Execute(t *testing.T) {
+	m := &ClientGatewayMock{}
+	m.On("Save", mock.Anything).Return(nil)
+	uc := NewCreateClientUseCase(m)
 
-	mockClientGateway.On("Save", mock.Anything).Return(nil)
-
-	usecase := NewCreateClientUsecase(mockClientGateway)
-
-	output, err := usecase.Execute(CreateClientInputDTO{
+	output, err := uc.Execute(CreateClientInputDTO{
 		Name:  "John Doe",
-		Email: "j@j.com"})
-
+		Email: "j@j",
+	})
 	assert.Nil(t, err)
 	assert.NotNil(t, output)
 	assert.NotEmpty(t, output.ID)
 	assert.Equal(t, "John Doe", output.Name)
-	assert.Equal(t, "j@j.com", output.Email)
-	mockClientGateway.AssertExpectations(t)
+	assert.Equal(t, "j@j", output.Email)
+	m.AssertExpectations(t)
+	m.AssertNumberOfCalls(t, "Save", 1)
 }

@@ -1,6 +1,8 @@
 package gateway
 
-import "github.com.br/vyctor/fc-microsservicos/internal/entity"
+import (
+	"github.com.br/devfullcycle/fc-ms-wallet/internal/entity"
+)
 
 type ClientGateway interface {
 	Get(id string) (*entity.Client, error)

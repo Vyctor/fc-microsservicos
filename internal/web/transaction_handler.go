@@ -4,32 +4,31 @@ import (
 	"encoding/json"
 	"net/http"
 
-	CreateTransaction "github.com.br/vyctor/fc-microsservicos/internal/usecase/create_transaction"
+	"github.com.br/devfullcycle/fc-ms-wallet/internal/usecase/create_transaction"
 )
 
 type WebTransactionHandler struct {
-	CreateTransactionUsecase CreateTransaction.CreateTransactionUsecase
+	CreateTransactionUseCase create_transaction.CreateTransactionUseCase
 }
 
-func NewWebTransactionHandler(createTransactionUsecase CreateTransaction.CreateTransactionUsecase) *WebTransactionHandler {
+func NewWebTransactionHandler(createTransactionUseCase create_transaction.CreateTransactionUseCase) *WebTransactionHandler {
 	return &WebTransactionHandler{
-		CreateTransactionUsecase: createTransactionUsecase,
+		CreateTransactionUseCase: createTransactionUseCase,
 	}
 }
 
 func (h *WebTransactionHandler) CreateTransaction(w http.ResponseWriter, r *http.Request) {
-	var dto CreateTransaction.CreateTransactionInputDto
-
+	var dto create_transaction.CreateTransactionInputDTO
 	err := json.NewDecoder(r.Body).Decode(&dto)
-
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-
-	output, err := h.CreateTransactionUsecase.Execute(dto)
+	ctx := r.Context()
+	output, err := h.CreateTransactionUseCase.Execute(ctx, dto)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(err.Error()))
 		return
 	}
 

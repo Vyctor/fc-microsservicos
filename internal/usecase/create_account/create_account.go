@@ -1,41 +1,42 @@
-package CreateAccount
+package create_account
 
 import (
-	"github.com.br/vyctor/fc-microsservicos/internal/entity"
-	"github.com.br/vyctor/fc-microsservicos/internal/gateway"
+	"github.com.br/devfullcycle/fc-ms-wallet/internal/entity"
+	"github.com.br/devfullcycle/fc-ms-wallet/internal/gateway"
 )
 
-type CreateAccountInputDto struct {
+type CreateAccountInputDTO struct {
 	ClientID string `json:"client_id"`
 }
 
-type CreateAccountOutput struct {
+type CreateAccountOutputDTO struct {
 	ID string
 }
 
-type CreateAccountUsecase struct {
-	AccountGateway gateway.AccountGateway
-	ClientGateway  gateway.ClientGateway
+type CreateAccountUseCase struct {
+	AccountGateway  gateway.AccountGateway
+	ClientGateway   gateway.ClientGateway
 }
 
-func NewCreateAccountUsecase(accountGateway gateway.AccountGateway, clientGateway gateway.ClientGateway) *CreateAccountUsecase {
-	return &CreateAccountUsecase{AccountGateway: accountGateway, ClientGateway: clientGateway}
+func NewCreateAccountUseCase(a gateway.AccountGateway, c gateway.ClientGateway) *CreateAccountUseCase {
+	return &CreateAccountUseCase{
+		AccountGateway:  a,
+		ClientGateway:   c,
+	}
 }
 
-func (u *CreateAccountUsecase) Execute(input CreateAccountInputDto) (*CreateAccountOutput, error) {
-	client, err := u.ClientGateway.Get(input.ClientID)
-
+func (uc *CreateAccountUseCase) Execute(input CreateAccountInputDTO) (*CreateAccountOutputDTO, error) {
+	client, err := uc.ClientGateway.Get(input.ClientID)
 	if err != nil {
 		return nil, err
 	}
-
 	account := entity.NewAccount(client)
-
-	err = u.AccountGateway.Save(account)
-
+	err = uc.AccountGateway.Save(account)
 	if err != nil {
 		return nil, err
 	}
-
-	return &CreateAccountOutput{ID: account.ID}, nil
+	output := &CreateAccountOutputDTO{
+		ID: account.ID,
+	}
+	return output, nil
 }
